@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="zh-CN" style="margin:0;padding:0;">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>星语 · AI 运势塔罗</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23e8c96a' d='M12 1l2.6 7.2L22 11l-7.4 2.8L12 21l-2.6-7.2L2 11l7.4-2.8z'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="https://miaoda.feishu.cn/fonts/css2?family=Noto+Serif+SC:wght@500;700;900&family=Noto+Sans+SC:wght@300;400;500;700&display=swap">
+<style>
+:root{
+  --bg0:#070a18; --bg1:#0e1530; --bg2:#141b33;
+  --card:rgba(22,29,58,.78); --card-line:rgba(216,192,120,.22);
+  --gold:#e8c96a; --gold-deep:#c9a94f; --violet:#8f7bd8; --milk:#f2eede; --dim:#a9a8c0; --faint:#6f6f8e;
+  --ok:#9ad98a; --warn:#e8b45a;
+  --serif:"Noto Serif SC",serif; --sans:"Noto Sans SC",system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{
+  font-family:var(--sans); color:var(--milk); background:var(--bg0);
+  background:
+    radial-gradient(1200px 800px at 80% -10%, rgba(76,58,140,.28), transparent 60%),
+    radial-gradient(900px 700px at -10% 30%, rgba(56,74,138,.22), transparent 60%),
+    linear-gradient(180deg,var(--bg0) 0%,var(--bg1) 55%,var(--bg2) 100%);
+  background-attachment:fixed; min-height:100dvh; overflow-x:hidden;
+}
+.stars{position:fixed; inset:0; pointer-events:none; z-index:0; opacity:.75}
+.view{position:relative; z-index:1; display:none; width:100%; max-width:480px; margin:0 auto; padding:20px 18px calc(34px + env(safe-area-inset-bottom)); min-height:100dvh}
+.view.active{display:block; animation:rise .38s ease both}
+@keyframes rise{from{opacity:0; transform:translateY(10px)}to{opacity:1; transform:none}}
+
+/* ---------- 通用组件 ---------- */
+.brand{display:flex; align-items:center; gap:9px; margin-bottom:6px}
+.brand .logo{width:34px;height:34px; flex:none}
+.brand h1{font-family:var(--serif); font-size:21px; font-weight:900; letter-spacing:.14em; color:var(--milk)}
+.brand .tag{font-size:11px; color:var(--faint); letter-spacing:.1em; margin-top:2px}
+.sec-title{font-family:var(--serif); font-size:19px; font-weight:700; margin:22px 0 12px; display:flex; align-items:center; gap:8px}
+.sec-title::before{content:""; width:4px; height:16px; background:var(--gold); border-radius:2px; box-shadow:0 0 8px rgba(232,201,106,.6)}
+.btn{display:flex; align-items:center; justify-content:center; gap:8px; width:100%; padding:14px 18px; border:0; border-radius:14px; font-family:var(--sans); font-size:16px; font-weight:700; cursor:pointer; transition:transform .12s, filter .12s; text-decoration:none}
+.btn:active{transform:scale(.97)}
+.btn-primary{background:linear-gradient(135deg,var(--gold),var(--gold-deep)); color:#241c05; box-shadow:0 6px 22px rgba(201,169,79,.35)}
+.btn-primary:hover{filter:brightness(1.06)}
+.btn-ghost{background:rgba(255,255,255,.06); color:var(--milk); border:1px solid rgba(255,255,255,.14)}
+.btn-lock{background:rgba(232,201,106,.12); color:var(--gold); border:1px solid rgba(232,201,106,.35)}
+.btn-mini{width:auto; padding:9px 16px; font-size:13.5px; border-radius:11px}
+.card{background:var(--card); border:1px solid var(--card-line); border-radius:18px; padding:18px; backdrop-filter:blur(8px); box-shadow:0 10px 30px rgba(0,0,0,.25)}
+.tiny{font-size:11px; color:var(--faint)}
+.center{text-align:center}
+.back-row{display:flex; align-items:center; justify-content:space-between; margin-bottom:8px}
+.back-btn{display:inline-flex; align-items:center; gap:5px; background:none; border:0; color:var(--dim); font-size:13px; cursor:pointer; padding:6px 8px; border-radius:8px}
+.back-btn:hover{color:var(--milk)}
+.divider{height:1px; background:linear-gradient(90deg,transparent,rgba(216,192,120,.35),transparent); margin:18px 0}
+.fineprint{margin-top:18px; text-align:center; color:var(--faint); font-size:10.5px; line-height:1.8}
+.badge-new{display:inline-block; background:rgba(232,201,106,.14); border:1px solid rgba(232,201,106,.4); color:var(--gold); font-size:10px; font-weight:700; padding:2px 8px; border-radius:20px; vertical-align:2px; margin-left:6px}
+
+/* ---------- 首页 ---------- */
+.hero{text-align:center; padding:26px 8px 8px}
+.hero .orb{width:128px; height:128px; margin:0 auto 14px; position:relative}
+.hero .orb img{width:100%; height:100%; object-fit:cover; border-radius:50%; border:1.5px solid var(--card-line); box-shadow:0 0 44px rgba(232,201,106,.28)}
+.hero h2{font-family:var(--serif); font-size:28px; font-weight:900; letter-spacing:.2em; margin-bottom:8px}
+.hero .sub{font-size:13px; color:var(--dim); letter-spacing:.06em; line-height:1.7}
+.form{margin-top:22px}
+.field{margin-bottom:14px}
+.field label{display:flex; align-items:center; gap:6px; font-size:13px; color:var(--dim); margin-bottom:7px}
+.field label svg{width:14px;height:14px;stroke:var(--gold);fill:none;stroke-width:1.8}
+.date-row{display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px}
+.date-row select{width:100%; padding:12px 8px; border-radius:12px; border:1px solid rgba(216,192,120,.28); background:rgba(10,14,31,.7); color:var(--milk); font-family:var(--sans); font-size:15px; text-align:center; appearance:none; -webkit-appearance:none}
+.date-row select:focus{outline:none; border-color:var(--gold)}
+.chips{display:flex; gap:8px; flex-wrap:wrap}
+.chip{flex:1; min-width:70px; padding:10px 6px; text-align:center; border-radius:11px; border:1px solid rgba(216,192,120,.25); background:rgba(10,14,31,.5); color:var(--dim); font-size:13px; cursor:pointer; transition:all .15s}
+.chip.on{background:rgba(232,201,106,.15); border-color:var(--gold); color:var(--gold)}
+.tiles{display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:18px}
+.tile{background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.09); border-radius:14px; padding:13px 8px; text-align:center; cursor:pointer; transition:all .15s}
+.tile:active{transform:scale(.96)}
+.tile .ic{width:22px;height:22px;margin:0 auto 7px; stroke:var(--gold);fill:none;stroke-width:1.6}
+.tile .nm{font-size:12.5px; color:var(--milk)}
+.tile .ds{font-size:10.5px; color:var(--faint); margin-top:3px; line-height:1.5}
+.quick-ask{margin-top:16px; display:flex; gap:8px; overflow-x:auto; padding-bottom:4px; scrollbar-width:none}
+.quick-ask::-webkit-scrollbar{display:none}
+.quick-ask .qa{flex:none; background:rgba(143,123,216,.1); border:1px solid rgba(143,123,216,.3); color:var(--violet); font-size:12.5px; padding:8px 14px; border-radius:20px; cursor:pointer; white-space:nowrap}
+.quick-ask .qa:active{transform:scale(.96)}
+
+/* ---------- 加载 ---------- */
+.loading-wrap{display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:78dvh; text-align:center}
+.spinner{width:118px; height:118px; position:relative; margin-bottom:26px}
+.spinner svg{position:absolute; inset:0; width:100%; height:100%}
+.spinner .ring{stroke:var(--violet); stroke-dasharray:120 60; animation:spin 1.6s linear infinite; fill:none; stroke-width:2.4; filter:drop-shadow(0 0 6px rgba(143,123,216,.8))}
+.spinner .ring2{stroke:var(--gold); stroke-dasharray:40 140; animation:spin 2.4s linear infinite reverse; fill:none; stroke-width:1.8; filter:drop-shadow(0 0 6px rgba(232,201,106,.8))}
+.spinner .core{font-family:var(--serif); font-size:26px; color:var(--gold); position:absolute; inset:0; display:flex; align-items:center; justify-content:center}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-wrap .txt{font-family:var(--serif); font-size:17px; color:var(--gold); letter-spacing:.22em; margin-bottom:8px}
+.loading-wrap .sub{font-size:12px; color:var(--faint); letter-spacing:.05em}
+.dots::after{content:""; animation:dots 1.4s steps(4,end) infinite}
+@keyframes dots{0%{content:""}25%{content:"."}50%{content:".."}75%{content:"..."}}
+
+/* ---------- 运势页 ---------- */
+.score-card{text-align:center; padding:22px 18px 18px; position:relative; overflow:hidden}
+.score-card::after{content:""; position:absolute; top:-40px; right:-40px; width:130px; height:130px; border-radius:50%; background:radial-gradient(circle,rgba(232,201,106,.18),transparent 70%)}
+.score-card .astro{display:flex; justify-content:center; gap:16px; font-size:12.5px; color:var(--dim); margin-bottom:14px}
+.score-card .astro b{color:var(--milk); font-weight:600}
+.big-score{display:flex; align-items:baseline; justify-content:center; gap:8px; margin-bottom:8px}
+.big-score .num{font-family:var(--serif); font-size:64px; font-weight:900; color:var(--gold); line-height:1; text-shadow:0 0 26px rgba(232,201,106,.45)}
+.big-score .suf{font-size:15px; color:var(--dim)}
+.score-stars{display:flex; justify-content:center; gap:5px; margin-bottom:14px}
+.score-stars svg{width:20px; height:20px; fill:var(--gold); filter:drop-shadow(0 0 5px rgba(232,201,106,.5))}
+.score-stars svg.off{fill:rgba(255,255,255,.12); filter:none}
+.meta-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:8px}
+.meta-grid .mi{background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08); border-radius:11px; padding:10px 6px}
+.meta-grid .mi .k{font-size:10.5px; color:var(--faint); margin-bottom:4px}
+.meta-grid .mi .v{font-size:13.5px; color:var(--milk); font-weight:600}
+.reading{margin-top:16px; line-height:1.95; font-size:14.5px; color:var(--milk)}
+.reading p{margin-bottom:12px}
+.reading p .lbl{display:block; font-family:var(--serif); color:var(--gold); font-size:14px; font-weight:700; margin-bottom:4px; letter-spacing:.08em}
+.lock-block{position:relative; margin-top:4px; overflow:hidden}
+.lock-block .blur{filter:blur(7px); opacity:.42; user-select:none; pointer-events:none}
+.lock-veil{position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; background:linear-gradient(180deg,transparent 0%, rgba(10,14,31,.55) 30%, rgba(10,14,31,.92) 100%)}
+.lock-veil svg{width:30px; height:30px; stroke:var(--gold); fill:none; stroke-width:1.6; filter:drop-shadow(0 0 10px rgba(232,201,106,.7))}
+.lock-veil .lt{font-size:13px; color:var(--gold); letter-spacing:.12em; font-weight:600}
+.lock-veil .ls{font-size:11px; color:var(--faint); margin-top:-6px}
+
+/* ---------- 单次解锁页 ---------- */
+.unlock-intro{font-size:13px; color:var(--dim); line-height:1.8; margin-bottom:16px}
+.unlock-item{display:flex; align-items:center; gap:13px; background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.1); border-radius:15px; padding:14px; margin-bottom:10px; cursor:pointer; transition:all .15s}
+.unlock-item:active{transform:scale(.98)}
+.unlock-item .u-ic{width:40px; height:40px; flex:none; border-radius:11px; background:rgba(232,201,106,.1); border:1px solid rgba(232,201,106,.25); display:flex; align-items:center; justify-content:center}
+.unlock-item .u-ic svg{width:20px; height:20px; stroke:var(--gold); fill:none; stroke-width:1.7}
+.unlock-item .u-t{flex:1; min-width:0}
+.unlock-item .u-t .n{font-size:14px; font-weight:700; color:var(--milk)}
+.unlock-item .u-t .d{font-size:11px; color:var(--faint); margin-top:3px; line-height:1.5}
+.unlock-item .u-p{font-family:var(--serif); font-size:18px; font-weight:900; color:var(--gold); flex:none}
+.unlock-item .u-p small{font-size:11px; font-weight:400; color:var(--faint)}
+.unlock-tip{text-align:center; font-size:11px; color:var(--faint); line-height:1.8; margin-top:14px}
+
+/* ---------- 塔罗页 ---------- */
+.tarot-hint{text-align:center; color:var(--dim); font-size:13px; line-height:1.8; margin:4px 0 18px}
+.tarot-hint b{color:var(--gold); font-weight:600}
+.fan{display:grid; grid-template-columns:repeat(3,1fr); gap:12px; perspective:900px}
+.fan .slot{aspect-ratio:2/3; border-radius:14px; position:relative; cursor:pointer; transform-style:preserve-3d; transition:transform .6s cubic-bezier(.2,.8,.25,1)}
+.fan .slot.flipped{transform:rotateY(180deg)}
+.fan .face{position:absolute; inset:0; border-radius:14px; backface-visibility:hidden; -webkit-backface-visibility:hidden; overflow:hidden; border:1px solid var(--card-line)}
+.fan .face.back{background:linear-gradient(150deg,#1a2144,#0d1228); display:flex; align-items:center; justify-content:center; box-shadow:0 8px 20px rgba(0,0,0,.4)}
+.fan .face.back svg{width:34px; height:34px; stroke:var(--gold); fill:none; stroke-width:1.4; opacity:.85}
+.fan .face.front{transform:rotateY(180deg); background:var(--bg2)}
+.fan .face.front img{width:100%; height:100%; object-fit:cover; display:block}
+.fan .slot.locked{cursor:not-allowed; opacity:.55}
+.fan .slot.locked::after{content:""; position:absolute; inset:0; border-radius:14px; background:rgba(8,10,22,.55)}
+.fan .slot.locked .lock-ic{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; z-index:2}
+.fan .slot.locked .lock-ic svg{width:24px; height:24px; stroke:var(--gold); fill:none; stroke-width:1.8}
+.tarot-result{margin-top:16px; display:none}
+.tarot-result.show{display:block; animation:rise .4s ease both}
+.result-head{display:flex; align-items:center; gap:14px; margin-bottom:14px}
+.result-head .mini{width:64px; height:96px; flex:none; border-radius:10px; overflow:hidden; border:1px solid var(--card-line); box-shadow:0 6px 16px rgba(0,0,0,.35)}
+.result-head .mini img{width:100%; height:100%; object-fit:cover}
+.result-head .rh-t h3{font-family:var(--serif); font-size:20px; font-weight:900; color:var(--gold); letter-spacing:.08em}
+.result-head .rh-t .pos{font-size:12px; color:var(--milk); background:rgba(154,217,138,.14); border:1px solid rgba(154,217,138,.3); padding:3px 9px; border-radius:20px; display:inline-block; margin-top:5px}
+.result-head .rh-t .pos.rev{background:rgba(232,180,90,.14); border-color:rgba(232,180,90,.35); color:var(--warn)}
+.meaning{line-height:1.95; font-size:14.5px; color:var(--milk)}
+.meaning p{margin-bottom:10px}
+
+/* ---------- AI 问答页 ---------- */
+.chat-box{display:flex; flex-direction:column; gap:12px; margin-top:14px}
+.msg{max-width:86%; padding:12px 15px; border-radius:16px; font-size:14px; line-height:1.85}
+.msg.user{align-self:flex-end; background:linear-gradient(135deg,var(--gold),var(--gold-deep)); color:#241c05; border-bottom-right-radius:5px}
+.msg.bot{align-self:flex-start; background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.1); border-bottom-left-radius:5px; color:var(--milk)}
+.msg.bot .who{display:block; font-size:10.5px; color:var(--gold); letter-spacing:.1em; margin-bottom:4px}
+.chat-input{display:flex; gap:8px; margin-top:14px; position:sticky; bottom:0; background:linear-gradient(180deg,transparent,var(--bg1) 30%); padding:10px 0 4px}
+.chat-input input{flex:1; min-width:0; background:rgba(10,14,31,.8); border:1px solid rgba(216,192,120,.28); border-radius:22px; padding:12px 16px; color:var(--milk); font-size:16px; font-family:var(--sans); outline:none}
+.chat-input input:focus{border-color:var(--gold)}
+.chat-input button{flex:none; width:48px; height:48px; border-radius:50%; border:0; background:linear-gradient(135deg,var(--gold),var(--gold-deep)); color:#241c05; display:flex; align-items:center; justify-content:center; cursor:pointer}
+.chat-input button svg{width:20px; height:20px; fill:none; stroke:currentColor; stroke-width:2}
+.ask-limit{text-align:center; font-size:11px; color:var(--faint); margin-top:10px; line-height:1.7}
+
+/* ---------- 订阅页 ---------- */
+.pay-hero{text-align:center; padding:16px 8px 8px}
+.pay-hero h2{font-family:var(--serif); font-size:23px; font-weight:900; letter-spacing:.12em; margin-bottom:6px}
+.pay-hero .p{font-size:12.5px; color:var(--dim); line-height:1.8}
+.plans{display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:18px}
+.plan{position:relative; border:1px solid rgba(216,192,120,.22); border-radius:16px; padding:16px 10px 14px; text-align:center; cursor:pointer; background:rgba(255,255,255,.03); transition:all .16s}
+.plan .pn{font-size:13px; color:var(--dim); margin-bottom:8px}
+.plan .pp{font-family:var(--serif); font-size:22px; font-weight:900; color:var(--milk)}
+.plan .pp small{font-size:11px; font-weight:400; color:var(--faint)}
+.plan .pd{font-size:10.5px; color:var(--faint); margin-top:5px; line-height:1.5}
+.plan.hot{border-color:var(--gold); background:rgba(232,201,106,.08); box-shadow:0 0 24px rgba(232,201,106,.18)}
+.plan.hot .tag-badge{position:absolute; top:-9px; left:50%; transform:translateX(-50%); background:linear-gradient(135deg,var(--gold),var(--gold-deep)); color:#241c05; font-size:10px; font-weight:700; padding:3px 10px; border-radius:20px; white-space:nowrap}
+.plan.on{border-color:var(--gold); box-shadow:0 0 0 1px var(--gold) inset, 0 8px 22px rgba(232,201,106,.2)}
+.benefits{margin-top:18px}
+.benefits .bi{display:flex; align-items:center; gap:10px; padding:10px 2px; font-size:13.5px; color:var(--milk)}
+.benefits .bi svg{width:17px; height:17px; flex:none; stroke:var(--gold); fill:none; stroke-width:2}
+.benefits .bi .x{stroke:var(--faint)}
+.auto-note{margin-top:14px; background:rgba(154,217,138,.06); border:1px solid rgba(154,217,138,.22); border-radius:12px; padding:11px 13px; font-size:11.5px; color:var(--dim); line-height:1.8}
+.auto-note b{color:var(--ok); font-weight:600}
+.pay-note{margin-top:16px; text-align:center; font-size:10.5px; color:var(--faint); line-height:1.8}
+
+/* ---------- Toast ---------- */
+#toast{position:fixed; left:50%; bottom:60px; transform:translateX(-50%) translateY(20px); background:rgba(18,24,48,.95); border:1px solid var(--card-line); color:var(--milk); padding:11px 20px; border-radius:30px; font-size:13px; z-index:99; opacity:0; pointer-events:none; transition:all .28s; box-shadow:0 10px 30px rgba(0,0,0,.4); white-space:nowrap; max-width:86vw; overflow:hidden; text-overflow:ellipsis}
+#toast.show{opacity:1; transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<div class="stars" id="stars"></div>
+
+<!-- ===== 视图：首页 ===== -->
+<section class="view active" id="view-home">
+  <div class="hero">
+    <div class="orb"><img src="assets/star.jpg" alt="星语"></div>
+    <h2>星 语</h2>
+    <p class="sub">AI 星象 · 每日运势 · 塔罗解惑 · 国学指引<br>输入生日，解锁属于你的今日运势</p>
+  </div>
+  <div class="card form">
+    <div class="field">
+      <label><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 3v18M3 12h18M5.6 5.6l12.8 12.8M18.4 5.6L5.6 18.4"/></svg>出生日期</label>
+      <div class="date-row">
+        <select id="f-year" aria-label="年"></select>
+        <select id="f-month" aria-label="月"></select>
+        <select id="f-day" aria-label="日"></select>
+      </div>
+    </div>
+    <div class="field">
+      <label><svg viewBox="0 0 24 24"><path d="M12 21s-7-4.5-9.5-9A5.5 5.5 0 0 1 12 6.5 5.5 5.5 0 0 1 21.5 12c-2.5 4.5-9.5 9-9.5 9z"/></svg>出生时辰（可选，影响八字排盘）</label>
+      <div class="chips" id="f-hour">
+        <span class="chip" data-v="0">未知</span><span class="chip" data-v="1">子时 23-1</span><span class="chip" data-v="2">丑时 1-3</span><span class="chip" data-v="3">寅时 3-5</span><span class="chip" data-v="4">卯时 5-7</span><span class="chip" data-v="5">辰时 7-9</span><span class="chip" data-v="6">巳时 9-11</span><span class="chip" data-v="7">午时 11-13</span><span class="chip" data-v="8">未时 13-15</span><span class="chip" data-v="9">申时 15-17</span><span class="chip" data-v="10">酉时 17-19</span><span class="chip" data-v="11">戌时 19-21</span><span class="chip" data-v="12">亥时 21-23</span>
+      </div>
+    </div>
+    <div class="field">
+      <label><svg viewBox="0 0 24 24"><path d="M12 2a7 7 0 0 1 7 7c0 2.4-1 3.9-2.5 5.3-1.2 1.1-2.5 1.7-2.5 3.7h-4c0-2-1.3-2.6-2.5-3.7C6 12.9 5 11.4 5 9a7 7 0 0 1 7-7z"/></svg>性别（可选）</label>
+      <div class="chips" id="f-gender">
+        <span class="chip" data-v="">未知</span><span class="chip" data-v="male">男</span><span class="chip" data-v="female">女</span>
+      </div>
+    </div>
+    <button class="btn btn-primary" id="btn-start" style="margin-top:6px"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2.4 7.6L22 12l-7.6 2.4L12 22l-2.4-7.6L2 12l7.6-2.4z"/></svg>开启今日运势</button>
+  </div>
+  <div class="tiles">
+    <div class="tile" data-goto="fortune"><svg class="ic" viewBox="0 0 24 24"><path d="M12 3l1.8 5.6L19.5 10l-5.7 1.4L12 17l-1.8-5.6L4.5 10l5.7-1.4z"/><path d="M19 15l.8 2.4L22 18l-2.2.6L19 21l-.8-2.4L16 18l2.2-.6z"/></svg><div class="nm">每日运势</div><div class="ds">AI 星盘推演</div></div>
+    <div class="tile" data-goto="tarot"><svg class="ic" viewBox="0 0 24 24"><path d="M12 3v6M12 15v6M3 12h6M15 12h6M5.6 5.6l4.2 4.2M14.2 14.2l4.2 4.2M18.4 5.6l-4.2 4.2M9.8 14.2l-4.2 4.2"/></svg><div class="nm">塔罗解惑</div><div class="ds">免费抽 1 张</div></div>
+    <div class="tile" data-goto="ask"><svg class="ic" viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-8.5 8.5c-1.5 0-3-.4-4.3-1L3 21l2-5.2A8.38 8.38 0 0 1 4.5 8a8.5 8.5 0 0 1 16.5 3.5z"/></svg><div class="nm">AI 问一问</div><div class="ds">玄学问答</div></div>
+  </div>
+  <p class="fineprint">仅供娱乐参考 · AI 生成内容不构成任何决策依据<br>星语致力于传统文化科普与自我探索</p>
+</section>
+
+<!-- ===== 视图：加载 ===== -->
+<section class="view" id="view-loading">
+  <div class="loading-wrap">
+    <div class="spinner">
+      <svg viewBox="0 0 120 120"><circle class="ring" cx="60" cy="60" r="52"/></svg>
+      <svg viewBox="0 0 120 120"><circle class="ring2" cx="60" cy="60" r="44"/></svg>
+      <div class="core">星</div>
+    </div>
+    <div class="txt">星盘推演中<span class="dots"></span></div>
+    <div class="sub">正在为你校准本命星图与今日星象</div>
+  </div>
+</section>
+
+<!-- ===== 视图：运势 ===== -->
+<section class="view" id="view-fortune">
+  <div class="back-row">
+    <button class="back-btn" data-back="home"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>返回</button>
+    <span class="tiny" id="fortune-date"></span>
+  </div>
+  <div class="card score-card" id="scoreCard"></div>
+  <div class="reading" id="fortuneRead"></div>
+  <div class="divider"></div>
+  <button class="btn btn-primary" id="btn-tarot"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V4.5A1.5 1.5 0 0 0 18.5 3H6.5A2.5 2.5 0 0 0 4 5.5v14z"/><path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20v-5"/></svg>塔罗抽牌 · 免费 1 次</button>
+  <button class="btn btn-lock" id="btn-unlock-fortune" style="margin-top:10px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>解锁完整运势报告</button>
+  <button class="btn btn-ghost" id="btn-to-share" style="margin-top:10px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 10.7l6.8-4M8.6 13.3l6.8 4"/></svg>生成运势卡片 · 分享给好友</button>
+</section>
+
+<!-- ===== 视图：单次解锁 ===== -->
+<section class="view" id="view-unlock">
+  <div class="back-row">
+    <button class="back-btn" data-back="prev"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>返回</button>
+    <span class="tiny">无需订阅 · 单次解锁</span>
+  </div>
+  <div class="sec-title">单次解锁<span class="badge-new">新</span></div>
+  <p class="unlock-intro">不想订阅？也可以按次付费解锁单项内容，一次一付，灵活选择。</p>
+  <div class="unlock-item" data-unlock="fortune" data-price="6">
+    <div class="u-ic"><svg viewBox="0 0 24 24"><path d="M12 3l1.8 5.6L19.5 10l-5.7 1.4L12 17l-1.8-5.6L4.5 10l5.7-1.4z"/></svg></div>
+    <div class="u-t"><div class="n">解锁今日完整运势</div><div class="d">健康 + 财运指引（限当日有效）</div></div>
+    <div class="u-p">¥6</div>
+  </div>
+  <div class="unlock-item" data-unlock="tarot-more" data-price="3">
+    <div class="u-ic"><svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V4.5A1.5 1.5 0 0 0 18.5 3H6.5A2.5 2.5 0 0 0 4 5.5v14z"/><path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20v-5"/></svg></div>
+    <div class="u-t"><div class="n">塔罗再抽 1 次</div><div class="d">遇事不决，再问一事</div></div>
+    <div class="u-p">¥3</div>
+  </div>
+  <div class="unlock-item" data-unlock="bazi" data-price="9">
+    <div class="u-ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 3v18M3 12h18"/></svg></div>
+    <div class="u-t"><div class="n">八字排盘 · 五行分析</div><div class="d">生辰八字 + 五行喜忌 + 性格简析</div></div>
+    <div class="u-p">¥9</div>
+  </div>
+  <button class="btn btn-lock" id="btn-unlock-to-pay" style="margin-top:12px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>订阅更划算 · 全部解锁</button>
+  <p class="unlock-tip">单次内容不自动续费 · 订阅后以上全部不限次</p>
+</section>
+
+<!-- ===== 视图：塔罗 ===== -->
+<section class="view" id="view-tarot">
+  <div class="back-row">
+    <button class="back-btn" data-back="fortune"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>返回运势</button>
+    <span class="tiny" id="tarot-remain"></span>
+  </div>
+  <div class="sec-title">塔罗解惑</div>
+  <p class="tarot-hint">心中默念你的问题，<b>点击一张牌</b>，牌会为你揭示答案。</p>
+  <div class="fan" id="fan">
+    <div class="slot" data-idx="0">
+      <div class="face back"><svg viewBox="0 0 24 24"><path d="M12 2l2.4 7.6L22 12l-7.6 2.4L12 22l-2.4-7.6L2 12l7.6-2.4z"/></svg></div>
+      <div class="face front"><img src="assets/lovers.jpg" alt="牌一"></div>
+    </div>
+    <div class="slot" data-idx="1">
+      <div class="face back"><svg viewBox="0 0 24 24"><path d="M12 2l2.4 7.6L22 12l-7.6 2.4L12 22l-2.4-7.6L2 12l7.6-2.4z"/></svg></div>
+      <div class="face front"><img src="assets/sun.jpg" alt="牌二"></div>
+    </div>
+    <div class="slot" data-idx="2">
+      <div class="face back"><svg viewBox="0 0 24 24"><path d="M12 2l2.4 7.6L22 12l-7.6 2.4L12 22l-2.4-7.6L2 12l7.6-2.4z"/></svg></div>
+      <div class="face front"><img src="assets/moon.jpg" alt="牌三"></div>
+    </div>
+  </div>
+  <div class="card tarot-result" id="tarotResult">
+    <div class="result-head">
+      <div class="mini"><img id="trImg" src="" alt=""></div>
+      <div class="rh-t">
+        <h3 id="trName"></h3>
+        <span class="pos" id="trPos"></span>
+      </div>
+    </div>
+    <div class="meaning" id="trMeaning"></div>
+  </div>
+  <div class="lock-block" id="tarotLock" style="display:none">
+    <div class="blur"><div class="card" style="height:120px"></div></div>
+    <div class="lock-veil">
+      <svg viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+      <span class="lt">今日免费次数已用完</span>
+      <span class="ls">订阅后塔罗不限次 · 或单次 ¥3 再问一事</span>
+    </div>
+  </div>
+  <div style="display:flex; gap:10px; margin-top:12px">
+    <button class="btn btn-lock" id="btn-unlock-tarot" style="flex:1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>订阅不限次</button>
+    <button class="btn btn-ghost" id="btn-tarot-single" style="flex:1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2l2.4 7.6L22 12l-7.6 2.4L12 22l-2.4-7.6L2 12l7.6-2.4z"/></svg>单次 ¥3</button>
+  </div>
+</section>
+
+<!-- ===== 视图：AI 问答 ===== -->
+<section class="view" id="view-ask">
+  <div class="back-row">
+    <button class="back-btn" data-back="home"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>返回</button>
+    <span class="tiny" id="ask-remain"></span>
+  </div>
+  <div class="sec-title">AI 问一问<span class="badge-new">新</span></div>
+  <p class="tarot-hint">关于运势、塔罗、八字、风水，任何问题都可以问。</p>
+  <div class="chat-box" id="chatBox">
+    <div class="msg bot"><span class="who">星语 AI</span>你好，我是星语。可以问我关于感情、事业、财运、健康运势的任何问题。今日免费 3 次。</div>
+  </div>
+  <div class="ask-limit" id="askLimit"></div>
+  <div class="chat-input">
+    <input id="chatInput" type="text" placeholder="输入你的问题…" aria-label="提问">
+    <button id="btn-send" aria-label="发送"><svg viewBox="0 0 24 24"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4z"/></svg></button>
+  </div>
+</section>
+
+<!-- ===== 视图：订阅 ===== -->
+<section class="view" id="view-pay">
+  <div class="back-row">
+    <button class="back-btn" data-back="prev"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>返回</button>
+  </div>
+  <div class="pay-hero">
+    <h2>解锁完整星语</h2>
+    <p class="p">每日 AI 运势 · 塔罗不限次 · AI 问答 · 八字排盘<br>全年 365 天的每日指引</p>
+  </div>
+  <div class="plans" id="plans">
+    <div class="plan" data-v="week"><div class="pn">周卡</div><div class="pp">¥6<small>/周</small></div><div class="pd">尝鲜体验</div></div>
+    <div class="plan hot" data-v="month"><div class="tag-badge">最受欢迎</div><div class="pn">月卡</div><div class="pp">¥18<small>/月</small></div><div class="pd">首月 ¥6 · 连续包月</div></div>
+    <div class="plan" data-v="year"><div class="pn">年卡</div><div class="pp">¥88<small>/年</small></div><div class="pd">省 ¥128</div></div>
+  </div>
+  <div class="card benefits">
+    <div class="bi"><svg viewBox="0 0 24 24"><path d="M5 12l4 4L19 6"/></svg>每日 AI 运势完整版</div>
+    <div class="bi"><svg viewBox="0 0 24 24"><path d="M5 12l4 4L19 6"/></svg>塔罗 / 星盘不限次数</div>
+    <div class="bi"><svg viewBox="0 0 24 24"><path d="M5 12l4 4L19 6"/></svg>AI 问答不限次数</div>
+    <div class="bi"><svg viewBox="0 0 24 24"><path d="M5 12l4 4L19 6"/></svg>八字排盘 + 五行分析</div>
+    <div class="bi"><svg viewBox="0 0 24 24"><path d="M5 12l4 4L19 6"/></svg>专属许愿提醒</div>
+    <div class="bi"><svg class="x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>去广告</div>
+  </div>
+  <button class="btn btn-primary" id="btn-pay" style="margin-top:18px">立即订阅</button>
+  <div class="auto-note"><b>自动续费说明</b>：连续包月首月 ¥6，次月起每月自动扣费 ¥18，可随时在「微信支付-自动扣款」或 App 内取消。取消后当期权益保留至到期日。</div>
+  <p class="pay-note">本页为产品演示，不产生真实扣费 · 内容仅供娱乐参考<br>星语致力于传统文化科普，不构成任何决策依据</p>
+</section>
+
+<!-- ===== 视图：分享 ===== -->
+<section class="view" id="view-share">
+  <div class="back-row">
+    <button class="back-btn" data-back="fortune"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>返回</button>
+  </div>
+  <div class="sec-title">生成我的运势卡</div>
+  <div class="card share-card" id="shareCard" style="text-align:center; padding:24px 18px">
+    <div class="tiny" style="letter-spacing:.3em; margin-bottom:10px">星语 · AI 星象</div>
+    <div id="shareOrb" style="width:84px;height:84px;margin:0 auto 12px;border-radius:50%;overflow:hidden;border:1px solid var(--card-line)"><img id="shareImg" src="" alt="" style="width:100%;height:100%;object-fit:cover"></div>
+    <div id="shareLine1" style="font-family:var(--serif);font-size:21px;font-weight:900;color:var(--gold);letter-spacing:.08em;margin-bottom:4px"></div>
+    <div id="shareLine2" style="font-size:12.5px;color:var(--dim);line-height:1.9;margin:10px 0 4px"></div>
+    <div id="shareLine3" style="font-size:12.5px;color:var(--milk);line-height:1.9"></div>
+  </div>
+  <button class="btn btn-primary" id="btn-share" style="margin-top:16px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 10.7l6.8-4M8.6 13.3l6.8 4"/></svg>保存图片分享</button>
+  <p class="fineprint">分享你的今日运势，好运常伴身边</p>
+</section>
+
+<div id="toast"></div>
+<script>
+/* ============================================================
+   星语 · AI 运势塔罗 — 上线版（演示）
+   数据说明：文案由内置示例引擎生成，用于演示产品体验与
+   订阅转化链路；正式版将接入大模型 API 与微信支付。
+   ============================================================ */
+(function(){
+'use strict';
+
+/* ---------- 星空背景 ---------- */
+(function(){
+  var s = document.getElementById('stars');
+  var html = '';
+  for (var i = 0; i < 70; i++) {
+    var x = Math.random()*100, y = Math.random()*100, r = Math.random()*1.6 + .4;
+    var op = Math.random()*.5 + .2;
+    var tw = Math.random() > .65 ? ' style="animation:tw' + (i%3) + ' ' + (2.4 + Math.random()*3) + 's ease-in-out infinite"' : '';
+    html += '<i style="position:absolute;left:' + x + '%;top:' + y + '%;width:' + r + 'px;height:' + r + 'px;border-radius:50%;background:#fff;opacity:' + op + ';box-shadow:0 0 4px rgba(255,255,255,.6)"' + tw + '></i>';
+  }
+  s.innerHTML = html;
+})();
+var st = document.createElement('style');
+st.textContent = '@keyframes tw0{0%,100%{opacity:.35}50%{opacity:.85}}@keyframes tw1{0%,100%{opacity:.5}50%{opacity:.2}}@keyframes tw2{0%,100%{opacity:.2}50%{opacity:.7}}';
+document.head.appendChild(st);
+
+/* ---------- 状态 ---------- */
+var state = {
+  year: 1995, month: 6, day: 15, hour: 0, gender: '',
+  score: 0, stars: 0, zodiac: '', animal: '', element: '', luckColor: '', luckNum: 0, tagline: '',
+  tarotUsed: 0, MAX_FREE_TAROT: 1, askUsed: 0, MAX_FREE_ASK: 3,
+  single: {},  // 已单次解锁的项 {fortune:true, tarotMore:0, bazi:true}
+  subscribed: false, lastPlan: 'month', prevView: 'home'
+};
+var tarotPool = [
+  {key:'lovers', name:'恋人', img:'assets/lovers.jpg', good:'关系的连结正在形成，真诚的沟通会带来意想不到的回应。', rev:'过度理想化的一段关系，需要回到现实校准彼此的期待。'},
+  {key:'wheel', name:'命运之轮', img:'assets/wheel.jpg', good:'转机将至，命运的齿轮正在为你转动，抓住眼前的机会。', rev:'循环之中需耐心，时运未至时，稳住节奏便是最好的应对。'},
+  {key:'moon', name:'月亮', img:'assets/moon.jpg', good:'直觉敏锐的时期，内心的声音值得被认真聆听。', rev:'迷雾笼罩，暂缓重大决定，等待情绪的水面重新平静。'},
+  {key:'sun', name:'太阳', img:'assets/sun.jpg', good:'能量充沛的一天，你的热情会感染身边的人，成果可见。', rev:'光芒之下或有阴影，适度收敛锋芒，注意过度乐观带来的遗漏。'},
+  {key:'star', name:'星星', img:'assets/star.jpg', good:'希望与灵感同在，新的方向正在显现，请保持相信。', rev:'期待与现实尚有距离，先把大目标拆成可完成的小步。'},
+  {key:'magician', name:'魔术师', img:'assets/magician.jpg', good:'你拥有改变局面的全部资源，行动即是魔法。', rev:'能力尚未被真正调动，警惕用言语代替行动的空转。'}
+];
+
+/* ---------- 工具 ---------- */
+function $(id){ return document.getElementById(id); }
+function show(view){
+  document.querySelectorAll('.view').forEach(function(v){ v.classList.remove('active'); });
+  var el = $('view-' + view);
+  if (el) el.classList.add('active');
+  window.scrollTo(0,0);
+}
+function toast(msg){
+  var t = $('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._tm);
+  t._tm = setTimeout(function(){ t.classList.remove('show'); }, 2200);
+}
+function seedRandom(n){
+  var x = n % 233280; x = (x * 9301 + 49297) % 233280;
+  return function(){ x = (x * 9301 + 49297) % 233280; return x / 233280; };
+}
+function hasFortuneFull(){
+  return state.subscribed || !!state.single.fortune;
+}
+function hasTarotUnlimited(){
+  return state.subscribed || (state.single.tarotMore || 0) > 0;
+}
+function hasBazi(){ return state.subscribed || !!state.single.bazi; }
+
+/* ---------- 首页表单 ---------- */
+(function(){
+  var y = $('f-year'), m = $('f-month'), d = $('f-day');
+  var now = new Date().getFullYear();
+  for (var i = now; i >= now - 80; i--) y.add(new Option(i + ' 年', i));
+  for (var j = 1; j <= 12; j++) m.add(new Option(j + ' 月', j));
+  for (var k = 1; k <= 31; k++) d.add(new Option(k + ' 日', k));
+  y.value = '1995'; m.value = '6'; d.value = '15';
+  function fixDays(){
+    var dim = new Date(+y.value, +m.value, 0).getDate();
+    if (+d.value > dim) d.value = dim;
+  }
+  y.onchange = fixDays; m.onchange = fixDays;
+  bindChips('f-hour', function(v){ state.hour = +v; });
+  bindChips('f-gender', function(v){ state.gender = v; });
+})();
+function bindChips(id, cb){
+  var wrap = $(id);
+  wrap.addEventListener('click', function(e){
+    var c = e.target.closest('.chip');
+    if (!c) return;
+    wrap.querySelectorAll('.chip').forEach(function(x){ x.classList.remove('on'); });
+    c.classList.add('on');
+    cb(c.getAttribute('data-v'));
+  });
+}
+
+/* ---------- 玄学引擎（示例数据生成） ---------- */
+var ELEMENTS = {0:'金',1:'木',2:'水',3:'火',4:'土'};
+var ZODIAC = ['白羊','金牛','双子','巨蟹','狮子','处女','天秤','天蝎','射手','摩羯','水瓶','双鱼'];
+function calcZodiac(mo, da){
+  var b = [[1,20,11],[2,19,12],[3,21,1],[4,20,2],[5,21,3],[6,22,4],[7,23,5],[8,23,6],[9,23,7],[10,24,8],[11,23,9],[12,22,10]];
+  for (var i = 0; i < 12; i++){ if (mo === b[i][0] && da >= b[i][1]) return ZODIAC[b[i][2]]; }
+  return ZODIAC[10];
+}
+var ANIMALS = ['鼠','牛','虎','兔','龙','蛇','马','羊','猴','鸡','狗','猪'];
+function calcAnimal(yr){ return ANIMALS[(yr - 4) % 12]; }
+function calcElement(yr){ return ELEMENTS[Math.floor(yr / 10) % 5]; }
+function lifeNumber(y, mo, da){
+  var s = String(y) + String(mo) + String(da);
+  var n = 0;
+  for (var i = 0; i < s.length; i++) n += +s[i];
+  while (n > 9) n = String(n).split('').reduce(function(a,b){ return a + +b; }, 0);
+  return n || 9;
+}
+var LUCK_COLORS = ['曜石金','星辉银','雾霭蓝','黛青','绯红','鎏金','月白','玄紫','青碧'];
+var TAGLINES = [
+  '宜主动 · 忌内耗',
+  '宜联结 · 忌冲动',
+  '宜沉淀 · 忌分心',
+  '宜表达 · 忌拖延',
+  '宜推进 · 忌摇摆'
+];
+function fortuneTexts(seed){
+  var r = seedRandom(seed);
+  var career = ['事业上适合推进那些拖延已久的计划，你的判断力在线，敢于开口就会赢得支持。','工作中容易遇到贵人点拨，把想法落到纸面上，机会比想象中更近。','今天不适合硬碰硬，以柔克刚更有效，把注意力放在能掌控的事情上。','效率曲线前高后低，重要事项尽量安排在上午完成，午后节奏放缓。'];
+  var love = ['感情上适合主动破冰，一句关心就能让关系升温。','关系中容易被琐事消耗，先照顾好自己，才有余力照顾彼此。','桃花信号偏弱，不妨把心思放在自我提升上，吸引力自然到来。','今天适合与重要的人共度时光，真诚的表达胜过刻意的安排。'];
+  var health = ['身体状况良好，但久坐容易肩颈紧张，记得每小时起身活动。','情绪有些敏感，试着用散步或深呼吸给自己一点缓冲空间。','精力充沛，适合安排一场运动，让身体的能量流动起来。','睡眠质量需要关注，睡前远离屏幕，给大脑留一段放空时间。'];
+  var wealth = ['财运平稳，适合做长期规划，不宜为一时冲动消费买单。','偏财信号出现，适合处理旧账、收回欠款，但避免高风险投入。','今日财位在正西，与财运相关的事务可以安排在午后推进。','收支容易失衡，记账比省钱更重要，先看清钱去了哪里。'];
+  var tip = ['幸运提示：佩戴你的幸运色物件，会带来微妙的助力。','幸运提示：午时前后做重要决定，成功率更高。','幸运提示：把重要消息在午后发出，回应会更积极。','幸运提示：今天适合整理与复盘，旧问题会找到新解法。'];
+  return {
+    p1: career[Math.floor(r()*4)],
+    p2: love[Math.floor(r()*4)],
+    p3: health[Math.floor(r()*4)],
+    p4: wealth[Math.floor(r()*4)],
+    p5: tip[Math.floor(r()*4)]
+  };
+}
+
+/* ---------- 生成运势 ---------- */
+$('btn-start').addEventListener('click', function(){
+  state.year = +$('f-year').value;
+  state.month = +$('f-month').value;
+  state.day = +$('f-day').value;
+  show('loading');
+  setTimeout(buildFortune, 1800);
+});
+function buildFortune(){
+  var y = state.year, mo = state.month, da = state.day;
+  var seed = y * 10000 + mo * 100 + da + state.hour * 7;
+  var r = seedRandom(seed);
+  state.zodiac = calcZodiac(mo, da);
+  state.animal = calcAnimal(y);
+  state.element = calcElement(y);
+  state.luckNum = lifeNumber(y, mo, da);
+  state.luckColor = LUCK_COLORS[Math.floor(r()*LUCK_COLORS.length)];
+  state.stars = 3 + Math.floor(r()*3);
+  state.tagline = TAGLINES[Math.floor(r()*TAGLINES.length)];
+  state.score = 62 + Math.floor(r()*34);
+  var txt = fortuneTexts(seed + state.luckNum);
+  state._txt = txt;
+
+  var now = new Date();
+  $('fortune-date').textContent = now.getFullYear() + '年' + (now.getMonth()+1) + '月' + now.getDate() + '日 · 今日星象';
+  var sc = $('scoreCard');
+  sc.innerHTML =
+    '<div class="astro"><span>' + state.zodiac + '座</span><span><b>·</b></span><span>生肖' + state.animal + '</span><span><b>·</b></span><span>五行' + state.element + '</span></div>' +
+    '<div class="big-score"><span class="num">' + state.score + '</span><span class="suf">分</span></div>' +
+    starsHtml(state.stars) +
+    '<div class="meta-grid">' +
+      '<div class="mi"><div class="k">幸运色</div><div class="v">' + state.luckColor + '</div></div>' +
+      '<div class="mi"><div class="k">幸运数字</div><div class="v">' + state.luckNum + '</div></div>' +
+      '<div class="mi"><div class="k">今日宜忌</div><div class="v" style="font-size:11.5px">' + state.tagline + '</div></div>' +
+    '</div>';
+
+  var full = hasFortuneFull();
+  var rd = $('fortuneRead');
+  rd.innerHTML =
+    '<p><span class="lbl">整体运势</span>' + txt.p1 + '</p>' +
+    '<p><span class="lbl">感情运势</span>' + txt.p2 + '</p>' +
+    (full
+      ? '<p><span class="lbl">健康运势</span>' + txt.p3 + '</p><p><span class="lbl">财运指引</span>' + txt.p4 + '</p><p><span class="lbl">' + txt.p5.split('：')[0] + '</span>' + txt.p5.split('：')[1] + '</p>'
+      : '<div class="lock-block">' +
+          '<div class="blur"><p><span class="lbl">健康运势</span>' + txt.p3 + '</p><p><span class="lbl">财运指引</span>' + txt.p4 + '</p><p><span class="lbl">幸运提示</span>' + txt.p5 + '</p></div>' +
+          '<div class="lock-veil"><svg viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span class="lt">解锁完整运势</span><span class="ls">订阅后每日全量解锁 · 或单次 ¥6</span></div>' +
+        '</div>');
+  $('btn-unlock-fortune').style.display = full ? 'none' : 'flex';
+  show('fortune');
+}
+function starsHtml(n){
+  var h = '<div class="score-stars">';
+  for (var i = 0; i < 5; i++){
+    h += '<svg viewBox="0 0 24 24" class="' + (i < n ? '' : 'off') + '"><path d="M12 2l2.6 7.2L22 11l-7.4 2.8L12 21l-2.6-7.2L2 11l7.4-2.8z"/></svg>';
+  }
+  return h + '</div>';
+}
+
+/* ---------- 塔罗 ---------- */
+$('btn-tarot').addEventListener('click', function(){ state.prevView='fortune'; enterTarot(); });
+function enterTarot(){
+  $('tarotResult').classList.remove('show');
+  var freeLeft = Math.max(0, state.MAX_FREE_TAROT - state.tarotUsed);
+  var unlimited = hasTarotUnlimited();
+  document.querySelectorAll('#fan .slot').forEach(function(s, i){
+    s.classList.remove('flipped');
+    s.classList.toggle('locked', i >= freeLeft && !unlimited);
+    s.style.pointerEvents = (i < freeLeft || unlimited) ? '' : 'none';
+  });
+  $('tarotLock').style.display = (freeLeft <= 0 && !unlimited) ? 'block' : 'none';
+  $('tarot-remain').textContent = unlimited ? '塔罗不限次' : ('今日免费 ' + Math.max(0, freeLeft) + ' 次');
+  show('tarot');
+}
+document.getElementById('fan').addEventListener('click', function(e){
+  var slot = e.target.closest('.slot');
+  if (!slot || slot.classList.contains('locked')) return;
+  var idx = +slot.getAttribute('data-idx');
+  slot.classList.add('flipped');
+  var card = tarotPool[(idx + state.tarotUsed) % tarotPool.length];
+  setTimeout(function(){ showTarotResult(card, slot); }, 620);
+  if (!hasTarotUnlimited()) state.tarotUsed++;
+});
+function showTarotResult(card, slot){
+  var rev = Math.random() < 0.32;
+  $('trImg').src = card.img;
+  $('trName').textContent = card.name;
+  var pos = $('trPos');
+  pos.textContent = rev ? '逆位' : '正位';
+  pos.className = 'pos' + (rev ? ' rev' : '');
+  $('trMeaning').innerHTML =
+    '<p><b style="color:var(--gold)">' + (rev ? '逆位解读' : '正位解读') + '：</b>' + (rev ? card.rev : card.good) + '</p>' +
+    '<p>结合你的星盘位置，这张牌提示：答案正在浮现，但最终的走向仍取决于你的选择。</p>';
+  var res = $('tarotResult');
+  res.classList.remove('show');
+  void res.offsetWidth;
+  res.classList.add('show');
+  var freeLeft = Math.max(0, state.MAX_FREE_TAROT - state.tarotUsed);
+  var unlimited = hasTarotUnlimited();
+  document.querySelectorAll('#fan .slot').forEach(function(s, i){
+    if (i >= freeLeft && !unlimited){
+      s.classList.add('locked');
+      s.style.pointerEvents = 'none';
+    }
+  });
+  $('tarotLock').style.display = (freeLeft <= 0 && !unlimited) ? 'block' : 'none';
+}
+
+/* ---------- AI 问答 ---------- */
+$('btn-send').addEventListener('click', askQuestion);
+$('chatInput').addEventListener('keydown', function(e){ if (e.key === 'Enter') askQuestion(); });
+var askReplies = [
+  '从星象看，近期你的状态适合「先沉淀再行动」。水星正在逆行期，重要决定不妨缓几天，让信息再飞一会儿。',
+  '塔罗的能量提示：你手里的选择并没有想象中那么少。抽到「星星」逆位时，先把大目标拆成可完成的小步，转机就在执行中。',
+  '从八字五行看，你日主偏旺，喜用神为水木。日常多接触水木相关的环境（绿色、北方），运势会有微妙助力。',
+  '这周的财运信号偏中性，适合整理旧账、复盘开支，不适合高风险投入。周四前后会有小的转机。',
+  '感情方面，当前更多是「磨合期」的能量。关系的升温不靠大动作，靠持续的细节回应。给自己和对方一点耐心。'
+];
+function askQuestion(){
+  var input = $('chatInput');
+  var q = input.value.trim();
+  if (!q) return;
+  if (!state.subscribed && state.askUsed >= state.MAX_FREE_ASK){
+    toast('今日免费次数已用完 · 订阅后不限次');
+    state.prevView = 'ask';
+    show('pay');
+    return;
+  }
+  addMsg('user', q);
+  input.value = '';
+  if (!state.subscribed) state.askUsed++;
+  updateAskLimit();
+  setTimeout(function(){
+    var idx = Math.floor(Math.random() * askReplies.length);
+    addMsg('bot', askReplies[idx]);
+  }, 900);
+}
+function addMsg(who, text){
+  var box = $('chatBox');
+  var d = document.createElement('div');
+  d.className = 'msg ' + who;
+  if (who === 'bot') d.innerHTML = '<span class="who">星语 AI</span>' + escapeHtml(text);
+  else d.textContent = text;
+  box.appendChild(d);
+  box.scrollTop = box.scrollHeight;
+}
+function escapeHtml(s){
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+function updateAskLimit(){
+  var left = state.subscribed ? -1 : Math.max(0, state.MAX_FREE_ASK - state.askUsed);
+  $('ask-remain').textContent = state.subscribed ? 'AI 问答不限次' : ('今日免费剩余 ' + left + ' 次');
+  $('askLimit').textContent = state.subscribed ? '' : '免费次数用完后需订阅继续追问';
+}
+
+/* ---------- 单次解锁 ---------- */
+document.querySelectorAll('.unlock-item').forEach(function(item){
+  item.addEventListener('click', function(){
+    var t = item.getAttribute('data-unlock');
+    var price = item.getAttribute('data-price');
+    state.prevView = 'unlock';
+    if (t === 'tarot-more'){
+      state.single.tarotMore = (state.single.tarotMore || 0) + 1;
+      state.subscribed = false;
+      toast('已解锁塔罗 1 次（演示）');
+      enterTarot();
+    } else if (t === 'fortune'){
+      state.single.fortune = true;
+      toast('已解锁今日完整运势（演示）');
+      buildFortune();
+    } else if (t === 'bazi'){
+      state.single.bazi = true;
+      showBazi();
+    }
+  });
+});
+$('btn-unlock-to-pay').addEventListener('click', function(){ state.prevView='unlock'; show('pay'); });
+$('btn-tarot-single').addEventListener('click', function(){ state.prevView='tarot'; show('unlock'); });
+function showBazi(){
+  var seed = state.year * 10000 + state.month * 100 + state.day + state.hour * 13;
+  var r = seedRandom(seed);
+  var wuxing = ['金','木','水','火','土'];
+  var w = wuxing[Math.floor(r()*5)];
+  var fav = wuxing[(wuxing.indexOf(w) + 2) % 5];
+  $('fortune-date').textContent = '八字排盘 · 五行分析';
+  var sc = $('scoreCard');
+  sc.innerHTML =
+    '<div class="astro"><span>命主 ' + state.zodiac + '座</span><span><b>·</b></span><span>生肖' + state.animal + '</span><span><b>·</b></span><span>日主属' + w + '</span></div>' +
+    '<div class="big-score"><span class="num" style="font-size:46px">' + state.animal + '</span><span class="suf" style="font-size:13px">年生人</span></div>' +
+    '<div class="meta-grid">' +
+      '<div class="mi"><div class="k">日主五行</div><div class="v">' + w + '</div></div>' +
+      '<div class="mi"><div class="k">喜用五行</div><div class="v">' + fav + '</div></div>' +
+      '<div class="mi"><div class="k">命格</div><div class="v" style="font-size:12px">' + (state.stars >= 4 ? '身强' : '身弱') + '</div></div>' +
+    '</div>';
+  var rd = $('fortuneRead');
+  rd.innerHTML =
+    '<p><span class="lbl">五行性格</span>日主属' + w + '，性格中的' + w + '性能量偏强：执行力在线、目标感明确，但偶尔会显得固执。喜用' + fav + '，多接触' + fav + '相关的场景，能补足气场的平衡。</p>' +
+    '<p><span class="lbl">本命简析</span>' + state.animal + '年生人，命宫落' + state.zodiac + '座，今年整体运势稳中有升。上半年适合积累与布局，下半年有贵人运显现，把握秋冬季的窗口期。</p>' +
+    '<p><span class="lbl">开运提示</span>' + (state.luckColor ? '今日幸运色为' + state.luckColor + '，' : '') + '幸运数字 ' + state.luckNum + '。' + (state._txt ? state._txt.p5 : '') + '</p>';
+  $('btn-unlock-fortune').style.display = 'none';
+  show('fortune');
+}
+
+/* ---------- 订阅 ---------- */
+var plans = {week:6, month:18, year:88};
+var planLabel = {week:'¥6/周', month:'¥18/月', year:'¥88/年'};
+var planBtn = {week:'立即订阅 ¥6/周', month:'立即订阅 ¥18/月', year:'立即订阅 ¥88/年'};
+document.getElementById('plans').addEventListener('click', function(e){
+  var p = e.target.closest('.plan');
+  if (!p) return;
+  document.querySelectorAll('.plan').forEach(function(x){ x.classList.remove('on'); });
+  p.classList.add('on');
+  state.lastPlan = p.getAttribute('data-v');
+  $('btn-pay').innerHTML = planBtn[state.lastPlan];
+});
+$('btn-pay').addEventListener('click', function(){
+  state.subscribed = true;
+  toast('订阅成功 · 已解锁全部权益（演示）');
+  setTimeout(function(){
+    if (state.prevView === 'tarot') enterTarot();
+    else if (state.prevView === 'ask') { updateAskLimit(); show('ask'); }
+    else if (state.prevView === 'unlock') show('unlock');
+    else { buildFortune(); show('fortune'); }
+  }, 800);
+});
+$('btn-unlock-fortune').addEventListener('click', function(){ state.prevView='fortune'; show('unlock'); });
+$('btn-unlock-tarot').addEventListener('click', function(){ state.prevView='tarot'; show('pay'); });
+
+/* ---------- 返回 & 入口 ---------- */
+document.addEventListener('click', function(e){
+  var b = e.target.closest('[data-back]');
+  if (b){
+    var to = b.getAttribute('data-back');
+    if (to === 'prev') to = state.prevView;
+    if (to === 'home') show('home');
+    else if (to === 'fortune') show('fortune');
+    else if (to === 'tarot') enterTarot();
+    else if (to === 'ask') { updateAskLimit(); show('ask'); }
+    return;
+  }
+  var g = e.target.closest('[data-goto]');
+  if (g){
+    var go = g.getAttribute('data-goto');
+    if (go === 'fortune'){ state.prevView='home'; buildFortune(); }
+    else if (go === 'tarot'){ state.prevView='home'; enterTarot(); }
+    else if (go === 'ask'){ state.prevView='home'; updateAskLimit(); show('ask'); }
+    return;
+  }
+});
+
+/* ---------- 分享 ---------- */
+$('btn-to-share').addEventListener('click', function(){ gotoShare(); });
+$('btn-share').addEventListener('click', function(){ gotoShare(); });
+function gotoShare(){
+  $('shareImg').src = tarotPool[0].img;
+  $('shareLine1').textContent = state.zodiac + '座今日运势 ' + state.score + ' 分';
+  $('shareLine2').textContent = state.luckColor + ' · 幸运数字 ' + state.luckNum + ' · ' + state.tagline;
+  $('shareLine3').textContent = state._txt ? state._txt.p1 : '';
+  show('share');
+  setTimeout(function(){ toast('长按卡片即可保存分享（演示）'); }, 400);
+}
+
+/* ---------- 初始化 ---------- */
+$('btn-pay').innerHTML = planBtn.month;
+updateAskLimit();
+
+})();
+</script>
+</body>
+</html>
